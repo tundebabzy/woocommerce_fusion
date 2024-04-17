@@ -551,16 +551,25 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 		"""
 		customer_woo_com_email = raw_billing_data.get("email")
 		customer_exists = frappe.get_value("Customer", {"woocommerce_email": customer_woo_com_email})
-		if not customer_exists:
+		address_exists = frappe.get_value("Address", {"address_line1": raw_billing_data.get("address_1"), "state": raw_billing_data.get("state"),
+											"city": raw_billing_data.get('city')})
+		if not customer_exists and not address_exists:
 			# Create Customer
 			customer = frappe.new_doc("Customer")
 			customer_docname = customer_name[:3].upper() + f"{randrange(1, 10**3):03}"
 			customer.name = customer_docname
+
+		elif address_exists:
+			doc = frappe.get_doc("Address", address_exists)
+			for link in doc.links:
+				if link.link_doctype == "Customer":
+					customer = frappe.get_doc("Customer", link.link_name)
+					break
+				
 		else:
 			# Edit Customer
 			customer = frappe.get_doc("Customer", {"woocommerce_email": customer_woo_com_email})
 			old_name = customer.customer_name
-
 		customer.customer_name = customer_name
 		customer.woocommerce_email = customer_woo_com_email
 		customer.flags.ignore_mandatory = True
@@ -633,11 +642,11 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 					item.item_defaults[0]['default_supplier'] = self.settings.default_supplier
 				else:
 					item.append(
-						"Item Default", 
-							{'company': self.settings.company,
+						"item_defaults", {
+							'company': self.settings.company,
 							'default_warehouse': self.settings.warehouse,
-							'default_supplier': self.settings.default_supplier},
-					)
+							'default_supplier': self.settings.default_supplier
+							})
 				item.delivered_by_supplier =  self.settings.delivered_by_supplier_drop_ship
 				item.save()
 
@@ -722,7 +731,7 @@ def rename_address(address, customer):
 
 def create_address(raw_data, customer, address_type):
 	address = frappe.new_doc("Address")
-
+	address.address_title = f"{raw_data.get('address_1')} {raw_data.get('state')} {raw_data.get('city')}"
 	address.address_line1 = raw_data.get("address_1", "Not Provided")
 	address.address_line2 = raw_data.get("address_2", "Not Provided")
 	address.city = raw_data.get("city", "Not Provided")
