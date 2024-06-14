@@ -556,7 +556,8 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 		"""
 		customer_woo_com_email = raw_billing_data.get("email")
 		customer_exists = frappe.get_value("Customer", {"woocommerce_email": customer_woo_com_email})
-		address_exists = frappe.get_value("Address", {"address_line1": raw_shipping_data.get("address_1"), "state": raw_shipping_data.get("state"),
+		address_exists = frappe.get_value("Address", {"woocommerce_email", customer_woo_com_email}) or \
+			frappe.get_value("Address", {"address_line1": raw_shipping_data.get("address_1"), "state": raw_shipping_data.get("state"),
 											"city": raw_shipping_data.get('city')})
 		if not customer_exists and not address_exists:
 			# Create Customer
