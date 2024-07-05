@@ -13,7 +13,7 @@ frappe.ui.form.on('WooCommerce Order', {
 		frappe.call({
 			method: "woocommerce_fusion.tasks.sync_sales_orders.run_sales_orders_sync",
 			args: {
-				// woocommerce_order_id: frm.doc.id
+				woocommerce_order_id: frm.doc.id
 			},
 			callback: function(r) {
 				frm.reload_doc();
