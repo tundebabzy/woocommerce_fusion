@@ -537,17 +537,20 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 		new_sales_order.company = self.settings.company
 		self.set_items_in_sales_order(new_sales_order, wc_order_data)
 		new_sales_order.flags.ignore_mandatory = True
-		try:
-			new_sales_order.insert()
-			if self.settings.submit_sales_orders:
-				new_sales_order.submit()
-		except Exception:
-			error_message = (
-				f"{frappe.get_traceback()}\n\nSales Order Data: \n{str(new_sales_order.as_dict())})"
-			)
-			frappe.log_error("WooCommerce Error", error_message)
+		if new_sales_order.items:
+			try:
+				new_sales_order.insert()
+				if self.settings.submit_sales_orders:
+					new_sales_order.submit()
+			except Exception:
+				error_message = (
+					f"{frappe.get_traceback()}\n\nSales Order Data: \n{str(new_sales_order.as_dict())})"
+				)
+				frappe.log_error("WooCommerce Error", error_message)
 
-		self.create_and_link_payment_entry(wc_order_data, new_sales_order.name)
+			self.create_and_link_payment_entry(wc_order_data, new_sales_order.name)
+		else:
+			frappe.log_error("WooCommerce Error", f"Sales order data does not include sales order items\n{new_sales_order.as_dict()}")
 
 	@staticmethod
 	def create_or_link_customer_and_address(
