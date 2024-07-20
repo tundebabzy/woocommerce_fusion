@@ -293,7 +293,11 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 			wc_order.load_from_db()
 
 			# Update the woocommerce_status field if necessary
-			wc_order_status = WC_ORDER_STATUS_MAPPING_REVERSE[wc_order.status]
+			wc_order_status = wc_order.status
+			try:
+				wc_order_status = WC_ORDER_STATUS_MAPPING_REVERSE[wc_order.status]
+			except KeyError:
+				pass
 			if sales_order.woocommerce_status != wc_order_status:
 				sales_order.woocommerce_status = wc_order_status
 				try:
