@@ -293,6 +293,7 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 			wc_order.load_from_db()
 
 			# Update the woocommerce_status field if necessary
+			print(sales_order.name)
 			wc_order_status = wc_order.status
 			try:
 				wc_order_status = WC_ORDER_STATUS_MAPPING_REVERSE[wc_order.status]
@@ -464,7 +465,7 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 		else:
 			for i, so_item in enumerate(sales_order.items):
 				if (
-					int(so_item.woocommerce_id) != line_items[i]["product_id"]
+					(so_item.woocommerce_id and int(so_item.woocommerce_id) != line_items[i]["product_id"])
 					or so_item.qty != line_items[i]["quantity"]
 					or so_item.rate != get_tax_inc_price_for_woocommerce_line_item(line_items[i])
 				):
@@ -530,6 +531,10 @@ class SynchroniseSalesOrders(SynchroniseWooCommerce):
 			error_message = f"{frappe.get_traceback()}"
 			frappe.log_error("WooCommerce Error", error_message)
 			raise
+
+		if new_sales_order.woocommerce_status != "Pending Payment" \
+			and new_sales_order.woocommerce_status != "Processing":
+			return
 
 		new_sales_order.woocommerce_server = site_domain
 		new_sales_order.woocommerce_payment_method = wc_order_data.get("payment_method_title", None)

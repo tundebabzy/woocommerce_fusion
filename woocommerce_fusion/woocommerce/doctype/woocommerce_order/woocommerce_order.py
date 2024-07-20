@@ -34,6 +34,7 @@ WC_ORDER_STATUS_MAPPING = {
 	"Quote Sent": "gplsquote-req",
 	"Trash": "trash",
 	"Partially Shipped": "partial-shipped",
+	"Pending Quote": "ywraq-pending"
 }
 WC_ORDER_STATUS_MAPPING_REVERSE = {v: k for k, v in WC_ORDER_STATUS_MAPPING.items()}
 
